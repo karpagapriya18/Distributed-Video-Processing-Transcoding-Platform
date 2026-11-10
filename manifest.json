@@ -1,0 +1,42 @@
+[
+  {
+    "path": "common/bus.py",
+    "before": "8ab4176f0433f1910b927b123751d0ebf9edfa7ae8475b3690c07701cbe4de19",
+    "after": "20e9bb8e922bbe2fcab6076ab8b6d4d3e565dddc0bf6644c8bcca2bdb5b31c08"
+  },
+  {
+    "path": "common/config.py",
+    "before": "8e9db94dea2e26a04163a0e83a2b4c46f72ff5b3de53ec91633cb70eed04e86a",
+    "after": "faf5b075440c3172ff309a233a23df809a6fdbddd665e95131984291919c2721"
+  },
+  {
+    "path": "services/gateway.py",
+    "before": "b291757b8e1c276ef5dd76f4dcd5ec831218e1725bf0d57de2e2923af26eecfa",
+    "after": "38a7ff3e883edf31fcdafa74304b3eb9e49c4411c6374533d4fed5bc2517610a"
+  },
+  {
+    "path": "services/orchestrator.py",
+    "before": "2866ba3d3d2c096d0855bc1cb2e21d3a495b4988589b4b7e335772e9ce0fe57b",
+    "after": "df8d611253d5c13e62c419691b1ac3bb5e976782c23235d1c1d130167298b77b"
+  },
+  {
+    "path": "tests/test_bus.py",
+    "before": "09deb92d75d42e8af0b86c3065c6314d7c8bbca174fbd2b0fb8cc1e3feb962d1",
+    "after": "f1294ae14cb0e2576ac4326a32661e717d79d62dcc7742e3cba5a1b07ea028bf"
+  },
+  {
+    "path": "tests/test_job_management.py",
+    "before": null,
+    "after": "614ba98e37851df2e82f379a878886c085217c52b77ad1179f450783bc6c4bd2"
+  },
+  {
+    "path": "docs/openapi.json",
+    "before": "32df7b2cd883faf993569a9490e7720b7c35853b412e1871902ea965ac3f5b82",
+    "after": "56fc616dfa9d99ff61bad3cd7b9d0361ae7117cbccddd44eb8bba45f3727d51c"
+  },
+  {
+    "path": "BACKEND_UPGRADE.md",
+    "before": null,
+    "after": "dc92c41620c816f8fb7cad2e9052ea45306ec1e50b98a5c5f270294e3c1f5d5f"
+  }
+]

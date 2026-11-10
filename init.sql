@@ -1,0 +1,15 @@
+CREATE DATABASE IF NOT EXISTS upload;
+CREATE DATABASE IF NOT EXISTS metadata;
+CREATE DATABASE IF NOT EXISTS orchestrator;
+CREATE DATABASE IF NOT EXISTS worker;
+CREATE DATABASE IF NOT EXISTS thumbnail;
+CREATE USER 'upload'@'%' IDENTIFIED BY 'upload';
+CREATE USER 'metadata'@'%' IDENTIFIED BY 'metadata';
+CREATE USER 'orchestrator'@'%' IDENTIFIED BY 'orchestrator';
+CREATE USER 'worker'@'%' IDENTIFIED BY 'worker';
+CREATE USER 'thumbnail'@'%' IDENTIFIED BY 'thumbnail';
+GRANT ALL PRIVILEGES ON upload.* TO 'upload'@'%';
+GRANT ALL PRIVILEGES ON metadata.* TO 'metadata'@'%';
+GRANT ALL PRIVILEGES ON orchestrator.* TO 'orchestrator'@'%';
+GRANT ALL PRIVILEGES ON worker.* TO 'worker'@'%';
+GRANT ALL PRIVILEGES ON thumbnail.* TO 'thumbnail'@'%';

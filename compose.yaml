@@ -1,0 +1,124 @@
+name: video-platform
+
+x-environment: &environment
+  API_KEY: ${API_KEY:-local-demo-key-change-me}
+  INTERNAL_TOKEN: ${INTERNAL_TOKEN:-local-internal-token-change-me}
+  SIGNING_SECRET: ${SIGNING_SECRET:-local-signing-secret-change-me}
+  PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8000}
+  RABBITMQ_URL: amqp://platform:platform@rabbitmq/
+  REDIS_URL: redis://redis:6379/0
+  MEDIA_ROOT: /media
+  MAX_UPLOAD_BYTES: ${MAX_UPLOAD_BYTES:-524288000}
+  MAX_ATTEMPTS: ${MAX_ATTEMPTS:-3}
+  RETRY_DELAY_MS: ${RETRY_DELAY_MS:-10000}
+  PROCESSING_TIMEOUT: ${PROCESSING_TIMEOUT:-1800}
+
+x-backend: &backend
+  build: .
+  restart: unless-stopped
+  init: true
+  healthcheck:
+    test: [CMD, curl, -f, http://localhost:8000/health]
+    interval: 15s
+    timeout: 5s
+    retries: 10
+    start_period: 40s
+  depends_on:
+    mysql: {condition: service_healthy}
+    rabbitmq: {condition: service_healthy}
+    media-init: {condition: service_completed_successfully}
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-local-root-password}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./infra/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD="$$MYSQL_ROOT_PASSWORD" mysql -h 127.0.0.1 -uroot -e "SELECT 1"']
+      interval: 5s
+      timeout: 5s
+      retries: 40
+  rabbitmq:
+    image: rabbitmq:4.1-management
+    environment:
+      RABBITMQ_DEFAULT_USER: platform
+      RABBITMQ_DEFAULT_PASS: platform
+    ports: ["127.0.0.1:15672:15672"]
+    volumes: [rabbitmq-data:/var/lib/rabbitmq]
+    healthcheck:
+      test: [CMD, rabbitmq-diagnostics, -q, ping]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+  redis:
+    image: redis:7.4-alpine
+    command: [redis-server, --appendonly, 'yes']
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  media-init:
+    image: busybox:1.37
+    user: '0'
+    command: [sh, -c, 'chown 10001:10001 /media && chmod 755 /media']
+    volumes: [media-data:/media]
+  upload:
+    <<: *backend
+    environment: {<<: *environment, SERVICE: upload}
+    volumes: [media-data:/media]
+  metadata:
+    <<: *backend
+    environment: {<<: *environment, SERVICE: metadata}
+  orchestrator:
+    <<: *backend
+    environment: {<<: *environment, SERVICE: orchestrator}
+  worker:
+    <<: *backend
+    environment: {<<: *environment, SERVICE: worker}
+    volumes: [media-data:/media]
+  thumbnail:
+    <<: *backend
+    environment: {<<: *environment, SERVICE: thumbnail}
+    volumes: [media-data:/media]
+  delivery:
+    <<: *backend
+    environment: {<<: *environment, SERVICE: delivery}
+    volumes: [media-data:/media:ro]
+  gateway:
+    <<: *backend
+    environment: {<<: *environment, SERVICE: gateway}
+    ports: ["127.0.0.1:8000:8000"]
+    depends_on:
+      upload: {condition: service_healthy}
+      metadata: {condition: service_healthy}
+      orchestrator: {condition: service_healthy}
+      worker: {condition: service_healthy}
+      thumbnail: {condition: service_healthy}
+      delivery: {condition: service_healthy}
+  frontend:
+    build: ./frontend
+    ports: ["127.0.0.1:3000:80"]
+    depends_on:
+      gateway: {condition: service_healthy}
+  tests:
+    profiles: [test]
+    build:
+      context: .
+      dockerfile: tests/Dockerfile
+    environment:
+      TEST_API_URL: http://gateway:8000
+      API_KEY: ${API_KEY:-local-demo-key-change-me}
+      RUN_E2E: '1'
+    depends_on:
+      gateway: {condition: service_healthy}
+
+volumes:
+  mysql-data:
+  rabbitmq-data:
+  redis-data:
+  media-data:
